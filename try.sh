@@ -1,5 +1,5 @@
 #!/bin/sh
-# test.sh - COMPLETE bundle verification with file comparison
+# create all the files on the fly and mkdir test directory
 
 [ ! -f prog ] && make
 
