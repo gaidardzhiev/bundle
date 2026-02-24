@@ -69,19 +69,18 @@ fverify "test 2" test2.c test2.expected
 
 cd ..
 
-printf 'delete all test files? [y/no] '
+printf "delete all test files? [yes/no] "
 
-read WIPE && \
+read -r WIPE 
 	case $WIPE in
-		([yY])
+		[y]* )
 			rm -r "${DIR}" "${ORIG}"
 			printf "%s and %s deleted...\n" "${DIR}" "${ORIG}"
 			;;
-		([nN])
+		[n]* )
 			printf "\n"
 			;;
-		(*)
-			printf "invalid response\n"
-			printf "please choose [yes/no] "
+		*)
+			printf "invalid response, please choose [yes/no]\n"
 			;;
 esac
