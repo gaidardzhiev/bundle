@@ -67,7 +67,7 @@ printf "executing bundle.sh and recreating files exactly\n"
 	printf "bundle extraction FAILED\n";
 	exit 3;
 }
-printf "  files recreated by bundle:\n"
+printf "  files recreated by bundle.sh:\n"
 (set -x; ls -la *.c; set +x) 2>&1 | grep ls
 
 printf "\nverifying byte for byte fidelity and proper compilation\n"
