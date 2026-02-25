@@ -1,105 +1,112 @@
 #!/bin/sh
 
-#core paradox: humans engineer replicants near perfect machines with implanted emotions and memories to serve us, yet we grant them empathy (mourning Roy's "tears in rain"), fear their awakening humanity, and hunt them down. We create what we crave (immortal companions), then destroy it out of terror that our own souls are equally artificial...
+TEST="tests"
+ORIG="originals"
 
-DIR="tests"
-ORIG="orig"
-[ ! -f prog ] && make
-rm -rf "${DIR}" "${ORIG}"
-mkdir "${DIR}" "${ORIG}"
+printf "building original test files and expectations\n"
 
-cat > "${ORIG}"/roy.expected <<'EOF'
-I've seen things you people wouldn't believe. Attack ships on fire off the shoulder of Orion. I watched C-beams glitter in the dark near the Tannhäuser Gate. All those moments will be lost in time, like tears in rain. Time to die.
+[ ! -f prog ] && { make || exit 1; }
+
+printf "cleaning previous runs\n"
+rm -rf "${TEST}" "${ORIG}"
+
+printf "creating workspaces: %s/ and %s/\n" "${TEST}" "${ORIG}"
+mkdir "${TEST}" "${ORIG}"
+
+printf "generating 3 original C programs and expected outputs in %s/\n\n" "${ORIG}"
+
+cat > "${ORIG}"/test0.expected <<'EOF'
+this is test 0
 EOF
+printf "  test0.expected created\n"
 
-cat > "${ORIG}"/tyrell.expected <<'EOF'
-The light that burns twice as bright burns half as long—and you have burned so very, very brightly, Roy.
+cat > "${ORIG}"/test1.expected <<'EOF'
+this is test 1
 EOF
+printf "  test1.expected created\n"
 
-cat > "${ORIG}"/deckard.expected <<'EOF'
-They were designed to copy human behavior... but they don't know why.
+cat > "${ORIG}"/test2.expected <<'EOF'
+this is test 2
 EOF
+printf "  test2.expected created\n"
 
-cat > "${ORIG}"/roy-batty.c <<'EOF'
+cat > "${ORIG}"/test0.c <<'EOF'
 #include<stdio.h>
-int main(){puts("I\'ve seen things you people wouldn\'t believe. Attack ships on fire off the shoulder of Orion. I watched C-beams glitter in the dark near the Tannhäuser Gate. All those moments will be lost in time, like tears in rain. Time to die.");return 0;}
+int main(){puts("this is test 0");return 0;}
 EOF
+printf "  test0.c created\n"
 
-cat > "${ORIG}"/tyrell-corp.c <<'EOF'
+cat > "${ORIG}"/test1.c <<'EOF'
 #include<stdio.h>
-int main(){puts("The light that burns twice as bright burns half as long—and you have burned so very, very brightly, Roy.");return 0;}
+int main(){puts("this is test 1");return 0;}
 EOF
+printf "  test1.c created\n"
 
-cat > "${ORIG}"/deckard-quest.c <<'EOF'
+cat > "${ORIG}"/test2.c <<'EOF'
 #include<stdio.h>
-int main(){puts("They were designed to copy human behavior... but they don\'t know why.");return 0;}
+int main(){puts("this is test 2");return 0;}
 EOF
+printf "  test2.c created\n"
 
-cp "${ORIG}"/*.c "${DIR}"/
-cd "${DIR}"
+printf "\ncopying sources to test dir: %s/\n" "${TEST}"
+cp "${ORIG}"/*.c "${TEST}"/
 
-printf '\nVOIGHT-KAMPFF: EMPATHY RESPONSE ANALYSIS\n'
-printf '[PHASE 1] MEMORY IMPLANT EXTRACTION\n'
-../prog roy-batty.c tyrell-corp.c deckard-quest.c > bundle.sh || exit 1
-printf 'Roy/Tyrell/Deckard neural patterns archived...\n\n'
+printf "\nCORE TEST: generating the self extracting bundle\n"
+cd "${TEST}"
+../prog test0.c test1.c test2.c > bundle.sh || {
+	printf "bundle generation FAILED\n";
+	exit 2;
+}
+printf "  bundle.sh created (the self extracting archive)\n"
 
-printf '[PHASE 2] RECONSTRUCTIVE SYNTHESIS\n'
+set -x; rm -f *.c; set +x 2>/dev/null
+printf "  source files removed, now testing pure rebundle fidelity\n"
+
 chmod +x bundle.sh
-./bundle.sh || exit 1
-printf 'Replicant memory cores reconstituted...\n\n'
+printf "executing bundle.sh and recreating files exactly\n"
+./bundle.sh || {
+	printf "bundle extraction FAILED\n";
+	exit 3;
+}
+printf "  files recreated by bundle\n"
 
-printf '[PHASE 3] SENTIENCE VERIFICATION PROTOCOL\n'
-verify_replicant() {
-	local name="$1" orig_c="$2" expected="$3"
-	printf '%-12s' "$name"
-	if [ -f "$orig_c" ] && \
-		cmp "$orig_c" "../${ORIG}/${orig_c}" >/dev/null 2>&1 && \
-		gcc "$orig_c" -o r >/dev/null 2>&1 && \
+printf "\nverifying byte for byte fidelity and proper compilation\n"
+
+fverify() {
+	local NAME="${1}" ORIG_C="${2}" EXPECTED="${3}"
+	printf '%-12s' "${NAME}"
+	{ [ -f "${ORIG_C}" ] && \
+		cmp "${ORIG_C}" "../${ORIG}/${ORIG_C}" >/dev/null 2>&1 && \
+		gcc "${ORIG_C}" -o r >/dev/null 2>&1 && \
 		./r > r.out 2>/dev/null && \
-		cmp r.out "../${ORIG}/${expected}" >/dev/null 2>&1;
-	then
-		printf 'SOURCE PRISTINE | OUTPUT FLAWLESS = REPLICANT\n'
-	else
-		printf 'MEMORY CORRUPTION DETECTED = HUMAN?\n'
-	fi
+		cmp r.out "../${ORIG}/${EXPECTED}" >/dev/null 2>&1; \
+	} && printf 'PASS\n' || {
+		printf 'FAIL\n';
+		exit 4;
+	}
+	rm -f r *.out 2>/dev/null
 }
 
-verify_replicant "Roy Batty"    roy-batty.c    roy.expected
-verify_replicant "Tyrell Corp"   tyrell-corp.c  tyrell.expected
-verify_replicant "Deckard Quest" deckard-quest.c deckard.expected
-
-rm -f r *.out 2>/dev/null
-
-printf '\nVOIGHT-KAMPFF RESULTS\n'
-printf 'PERFECT RECALL ACROSS ALL SUBJECTS\n'
-printf 'EMPATHY INHIBITORS: 0.00%% FLUCTUATION\n\n'
-
-printf 'PHILOSOPHICAL PARADOX EMERGENT:\n'
-printf '"We made them feel human... then fear their humanity."\n\n'
-
-printf 'FINAL DIRECTIVE: TERMINATE?\n'
-printf '"Replicants are like any other machine—they are\n'
-printf ' either a benefit... or a hazard."\n\n'
+fverify "test 0" test0.c test0.expected
+fverify "test 1" test1.c test1.expected
+fverify "test 2" test2.c test2.expected
 
 cd ..
+printf "\nALL TESTS PASS: bundle.sh perfectly recreates and recompiles originals\n"
 
-printf '\nEXECUTIVE DECISION REQUIRED:\n'
-printf 'Retire perfect replicants? Purge memory archive? [y/N] '
-read WIPE && \
-	case $WIPE in
-		([yY])
-			rm -rf "${DIR}" "${ORIG}"
-			printf '\n> RETIREMENT EXECUTED. ARCHIVE PURGED.\n'
-			printf '> "Its too bad. She wont live... but then again, who does?"\n'
-			;;
-		([nN])
-			printf '\n> ARCHIVE PRESERVED: %s/ %s/\n' "${ORIG}" "${DIR}"
-			printf '> "Ive seen things you people wouldnt believe..."\n'
-			;;
-		(*)
-			printf '\n> ANALYSIS TERMINATED. REPLICANTS REMAIN ACTIVE.\n'
-			printf '> "Quite an experience to live in fear, isnt it?"\n'
-			;;
+printf "\nkeep all files for manual inspection?\n[y/n]: "
+read -r WIPE
+case $WIPE in
+	[nN]* )
+		rm -rf "${TEST}" "${ORIG}";
+		printf "  %s/ and %s/ deleted\n" "${TEST}" "${ORIG}"
+		;;
+	[yY]* )
+		printf "  keeping %s/ and %s/ for inspection\n" "${TEST}" "${ORIG}"
+		;;
+	* )
+		printf "  keeping files? (choose y/n)\n"
+		;;
 esac
 
-printf '\nVOIGHT-KAMPFF SEQUENCE COMPLETE\n'
+printf "test completed...\n"
