@@ -3,13 +3,12 @@
 TEST="tests"
 ORIG="originals"
 
-printf "building original test files and expectations\n"
-
 [ ! -f prog ] && { make || exit 1; }
 
 printf "cleaning previous runs\n"
 rm -rf "${TEST}" "${ORIG}"
 
+printf "building original test files and expectations\n"
 printf "creating workspaces: %s/ and %s/\n" "${TEST}" "${ORIG}"
 mkdir "${TEST}" "${ORIG}"
 
@@ -59,7 +58,7 @@ cd "${TEST}"
 }
 printf "  bundle.sh created (the self extracting archive)\n"
 
-set -x; rm -f *.c; set +x 2>/dev/null
+(set -x; rm -f *.c; set +x) 2>&1 | grep rm
 printf "  source files removed, now testing pure rebundle fidelity\n"
 
 chmod +x bundle.sh
@@ -68,7 +67,8 @@ printf "executing bundle.sh and recreating files exactly\n"
 	printf "bundle extraction FAILED\n";
 	exit 3;
 }
-printf "  files recreated by bundle\n"
+printf "  files recreated by bundle:\n"
+(set -x; ls -la *.c; set +x) 2>&1 | grep ls
 
 printf "\nverifying byte for byte fidelity and proper compilation\n"
 
