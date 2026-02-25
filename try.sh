@@ -109,4 +109,4 @@ case $WIPE in
 		;;
 esac
 
-printf "test completed...\n"
+printf "TEST COMPLETED\n"
