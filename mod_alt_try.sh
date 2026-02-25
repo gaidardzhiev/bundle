@@ -72,24 +72,6 @@ printf "  files recreated by bundle\n"
 
 printf "\nverifying byte for byte fidelity and proper compilation\n"
 
-#purge the if statments
-#fverify() {
-#	local name="$1" orig_c="$2" expected="$3"
-#	printf '%-12s' "$name"
-#	if [ -f "$orig_c" ] && \
-#		cmp "$orig_c" "../${ORIG}/${orig_c}" >/dev/null 2>&1 && \
-#		gcc "$orig_c" -o r >/dev/null 2>&1 && \
-#		./r > r.out 2>/dev/null && \
-#		cmp r.out "../${ORIG}/${expected}" >/dev/null 2>&1;
-#	then
-#		printf 'PASS\n'
-#	else
-#		printf 'FAIL\n'
-#		exit 4
-#	fi
-#	rm -f r *.out 2>/dev/null
-#}
-
 fverify() {
 	local NAME="${1}" ORIG_C="${2}" EXPECTED="${3}"
 	printf '%-12s' "${NAME}"
