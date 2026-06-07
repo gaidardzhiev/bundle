@@ -29,7 +29,7 @@ ifeq "$(findstring $(GCC),${CC})" "$(GCC)"
 CSILENCE+=
 CWARN+=
 endif
-PROG= prog
+PROG= bundle
 OBJ= ${PROG}.o
 TARGET= ${PROG}
 DATA=

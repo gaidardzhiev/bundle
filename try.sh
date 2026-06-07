@@ -3,7 +3,7 @@
 TEST="tests"
 ORIG="originals"
 
-[ ! -f prog ] && { make || exit 1; }
+[ ! -f bundle ] && { make || exit 1; }
 
 printf "cleaning previous runs\n"
 rm -rf "${TEST}" "${ORIG}"
@@ -52,7 +52,7 @@ cp "${ORIG}"/*.c "${TEST}"/
 
 printf "\nCORE TEST: generating the self extracting bundle\n"
 cd "${TEST}"
-../prog test0.c test1.c test2.c > bundle.sh || {
+../bundle test0.c test1.c test2.c > bundle.sh || {
 	printf "bundle generation FAILED\n";
 	exit 2;
 }
